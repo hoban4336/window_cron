@@ -1,0 +1,10 @@
+# dotenv
+.env.*
+
+# Python 실행 파일
+*.py[cod]
+__pycache__/
+
+# 스크린샷 저장 디렉토리
+screenshots
+screenshots/
