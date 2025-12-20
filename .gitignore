@@ -8,3 +8,6 @@ __pycache__/
 # 스크린샷 저장 디렉토리
 screenshots
 screenshots/
+
+# Claude 파일
+.claude
