@@ -2,7 +2,7 @@
 import subprocess
 import sys
 import time
-import datetime
+from datetime import datetime
 
 # requirements 설치 함수
 def install_requirements():
