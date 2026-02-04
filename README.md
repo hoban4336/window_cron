@@ -1,6 +1,6 @@
-# Visang EHR Auto Clock-In Script
+# EHR Auto Clock-In Script
 
-자동으로 Visang EHR 시스템에 출퇴근을 체크하는 Python Selenium 스크립트입니다.
+자동으로 EHR 시스템에 출퇴근을 체크하는 Python Selenium 스크립트입니다.
 
 ## 📋 Requirements
 
@@ -27,8 +27,8 @@ cd window_cron
 ### 3. 로그인 정보 설정
 `.env.private` 파일 생성:
 ```env
-VISANG_USERNAME=your_username
-VISANG_PASSWORD=your_password
+_USERNAME=your_username
+_PASSWORD=your_password
 ```
 
 ### 4. 실행
@@ -56,7 +56,7 @@ window_cron/
 
 ### 1. 자동 로그인
 - Chrome WebDriver 자동 설정
-- Visang EHR 로그인 자동화
+-  EHR 로그인 자동화
 
 ### 2. 스마트 팝업 처리 ✨ NEW!
 로그인 후 나타나는 다양한 팝업을 자동으로 처리합니다:
@@ -161,4 +161,4 @@ SELECTOR_BTN_END=S_WORK_END_BTN
 
 ---
 
-**Note**: Visang EHR UI 변경 시 `.env`의 셀렉터 업데이트 필요
+**Note**:  EHR UI 변경 시 `.env`의 셀렉터 업데이트 필요
