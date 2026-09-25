@@ -3,15 +3,20 @@ import subprocess
 import sys
 import time
 from datetime import datetime
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+REQUIREMENTS_FILE = BASE_DIR / "requirements.txt"
 
 # requirements 설치 함수
 def install_requirements():
     try:
         import selenium
         import dotenv
+        import webdriver_manager
     except ImportError:
         print("🔧 Installing requirements...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", str(REQUIREMENTS_FILE)])
 
 install_requirements()
 
@@ -21,7 +26,17 @@ if today.weekday() >= 5:  # 5 = 토요일, 6 = 일요일
     print("📅 주말(토/일)은 실행하지 않습니다.")
     sys.exit(0)
 
-# 개선 포인트 ( 공휴일 제외 )
+from holiday_checker import today_holiday, today_leave, safe_print
+
+holiday_name = today_holiday()
+if holiday_name:
+    safe_print("📅 공휴일({})은 실행하지 않습니다.".format(holiday_name))
+    sys.exit(0)
+
+leave_name = today_leave()
+if leave_name:
+    safe_print("📅 연차({})은 실행하지 않습니다.".format(leave_name))
+    sys.exit(0)
 
 from login import login
 from check_work import check_and_click_work

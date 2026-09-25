@@ -1,0 +1,468 @@
+<html><head>
+<base href="https://ehr.visang.com/main/jsp/login.jsp">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>:: eHR System JaDE ::</title>
+<link rel="shortcut icon" href="/common/images/V03/common/jade.ico">
+<link href="/common/css/V03/skinB/login.css?ver=20260430" rel="stylesheet" type="text/css">
+<script src="/common/js/jquery-3.7.1.min.js"></script>
+
+<script src="/common/js/jquery-ui-1.14.1.min.js"></script>
+<script src="/common/js/jquery.protify-0.3.js"></script>
+<script src="/common/js/classy.js?ver=20260430"></script>
+<script src="/common/js/layout.js?ver=20260430"></script>
+<script src="/common/js/common.js?ver=20260430"></script>
+<script src="/common/js/message.js?ver=20260430"></script>
+<script src="/common/js/sha.js?ver=20260430"></script>
+<script>
+window.name = "ehrTopFrame";
+
+var S_PGM_OPEN_TIME = "";
+var S_ENC_OTP_KEY   = "";
+var S_CSRF_SALT     = "null";
+var SKIN_SUB_PATH   = "V03/skinB" || "V03";
+var MAIN_TYPE   = "V03" || "V01";
+var CUR_MAIN_TYPE = "V03"; //로그인화면에서 모달띄울때 분기처리
+function LoadPage()
+{
+  
+  
+  Layout.init();
+  var xsC_CD = makeXSheetWithXmlText($("#xml_c_cd").val());
+  var cCdElement = "";
+  if ("Y" == "Y")
+  {
+    cCdElement = "<select id='S_C_CD' name='S_C_CD'></select>";
+    $("#cCdArea").append(cCdElement);
+    $("#S_C_CD").empty();
+    setCombo(xsC_CD, "S_C_CD", null, "");
+  }
+  else
+  {
+    cCdElement = "<input type='text' class='input2' id='S_C_CD' name='S_C_CD' title='회사코드' placeholder='회사코드' />";
+    $("#cCdArea").append(cCdElement);
+    if (xsC_CD.RowCount() == 1)
+    {
+      $("#S_C_CD").val(xsC_CD.GetCellValue(0, 1));
+    } else {
+      $("#S_C_CD").val("");
+    }
+  }
+
+  var S_C_CD    = "";
+  var S_USER_ID = "";
+  var S_PWD     = "";
+  
+  if ( S_C_CD && S_USER_ID && S_PWD )
+  {
+    inputSetValueAuto('S_C_CD', S_C_CD);
+    inputSetValueAuto('S_USER_ID', S_USER_ID);
+    inputSetValueAuto('S_PWD', S_PWD);
+    doAction("login_before");
+  }
+  else
+  {
+    doAction("setIdFromCookie");
+  }
+  
+  bSocialEvent();
+  
+  showLoginForm(true);
+}
+
+function doAction(sAction)
+{
+  inputAutoUnformat();
+  switch(sAction)
+  {
+    case "popChangePassword":
+    {
+      if ( $("#S_C_CD").val() == "" )
+      {
+        if ("Y" == "Y")
+        {
+          alert("Please choose a company."); // 회사를 선택해주세요.
+        }
+        else
+        {
+          alert("Please enter your company."); // 회사를 입력해주세요.
+        }
+
+        $("#S_C_CD").focus();
+        return;
+      }
+
+//       popOpen({url: '/sys/sy_main/sy_main_417_p03.jsp', name: 'Changing the password', param: {S_C_CD: $("#S_C_CD").val(), S_MODAL_YN:"N" }});
+//       ModalUtil.open({title: 'Changing the password', url: '/sys/sy_main/sy_main_417_p03.jsp', param:{S_C_CD: $("#S_C_CD").val(), S_USER_ID: $("#S_USER_ID").val(), S_MODAL_YN:"Y", S_LOGIN_YN: "Y"}}); // 취약점 조치로 주석처리
+      ModalUtil.open({title: 'Changing the password', url: '/sys/sy_main/sy_main_417_p03.jsp', param:{S_C_CD: $("#S_C_CD").val(), S_USER_ID: $("#S_USER_ID").val(), S_MODAL_YN:"Y", S_LOGIN_YN: "Y"}});
+    }
+    break;
+
+    case "popResetPassword":
+    {
+      if ( $("#S_C_CD").val() == "" )
+      {
+        if ("Y" == "Y")
+        {
+          alert("Please choose a company."); // 회사를 선택해주세요.
+        }
+        else
+        {
+          alert("Please enter your company."); // 회사를 입력해주세요.
+        }
+
+        $("#S_C_CD").focus();
+        return;
+      }
+
+      ModalUtil.open({title: 'Password initialization', url: '/sys/sy_main/sy_main_419_p03.jsp', param:{S_C_CD: $("#S_C_CD").val(), S_USER_ID: $("#S_USER_ID").val(), S_MODAL_YN:"Y", S_LOGIN_YN: "Y"}});
+    }
+    break;
+
+    
+    case "setIdFromCookie":
+    {
+      var id = getCookie("SAVE_ID");
+      var checkedSaveId = getCookie("CHECKED_SAVE_ID");
+      if(checkedSaveId == "Y"){
+    	  $("#id_chk").prop("checked", true);
+    	  if(id){
+    		  $(".chkLogSave").removeClass("off");
+    		  var arrTmp = id.split("|");
+    		  if(arrTmp[0]) {
+    			  $("#S_C_CD").val(arrTmp[0]);
+    		  }
+    		  if(arrTmp[1]) {
+    			  $("#S_USER_ID").val(arrTmp[1]);
+    		  }
+   	      }
+      } else {
+    	  $("#id_chk").prop("checked", false);
+    	  if(!$(".chkLogSave").hasClass("off")){
+    		  $(".chkLogSave").addClass("off");
+    	  }
+    	  
+    	  var arrTmp = id.split("|");
+    	  if(arrTmp[0]) {
+    		  $("#S_C_CD").val(arrTmp[0]);
+		  }
+      }
+      
+      if (!$("#S_C_CD").val())
+      {
+        input_selectfocus("S_C_CD");
+      }
+      else if ($("#S_C_CD").val() && !$("#S_USER_ID").val())
+      {
+        input_selectfocus("S_USER_ID");
+      }
+      else
+      {
+        input_selectfocus("S_PWD");
+      }
+    }
+    break;
+    case "login":
+    {
+      if ( $("#S_C_CD").val() == "" )
+      {
+        if ("Y" == "Y")
+        {
+          alert("Please choose a company."); // 회사를 선택해주세요.
+        }
+        else
+        {
+          alert("Please enter your company."); // 회사를 입력해주세요.
+        }
+
+        return;
+      }
+      if ( ! checkForm("f1") ) return;
+
+      //반응형로그인시 쿠키에 담아두고 로그아웃시 반응형로그인페이지가 뜨도록 처리함.
+  	  //사스때문에 임시처리.
+  	  setCookie("isResponsive", "N", 1);
+      
+      ajaxRequestXSProg("biz.sys.sy_main.Sy_main_page", "login", $("form[name='f1']").serializeObject(), function(xs)
+      {
+        showLoginForm(false);
+        //if ( $("#id_chk").attr("class") == "chkLogSave" )
+        if($("#id_chk").prop("checked"))
+        {
+          setCookie("SAVE_ID", $("#S_C_CD").val()+"|"+$("#S_USER_ID").val(), 10);
+          setCookie("CHECKED_SAVE_ID", "Y", 10);
+        }
+        else
+        {
+          setCookie("SAVE_ID", $("#S_C_CD").val()+"|", 10);
+          setCookie("CHECKED_SAVE_ID", "N", 1);
+        }
+
+        setTimeout(function()
+        {
+          submit2({target: 'ehrTopFrame', action: '/'}, {directpage_id: $("#directpage_id").val(), firstpage_id: $("#firstpage_id").val()});
+        }, 1000);
+      });
+    }
+    break;
+    case "saveID":
+    {
+      if($(".chkLogSave").hasClass("off"))
+      {
+        $("#id_chk").prop("checked", true);
+        $(".chkLogSave").removeClass("off");
+      }
+      else
+      {
+        $("#id_chk").prop("checked", false);
+        $(".chkLogSave").addClass("off");
+      }
+    }
+    break;
+    case "login_before":
+    {
+      var isAuthYn = "";
+      var S_AUTH_TYPE = "";
+      var str = "";
+      var pwd_reset_pop = "N";
+      
+      if ( ! checkForm("f1") ) return;
+      
+      ajaxSyncRequestXS("biz.sys.sy_main.Sy_main_page", "login_before", $("form[name='f1']").serializeObject(), function(xs)
+      {
+    	  
+        str = xs.GetEtcData("RESET_POP"); // 자바에서 넘겨받은 구분값 변수
+        isAuthYn = xs.GetEtcData("AUTH_2FA_USE_YN");
+        S_AUTH_TYPE = xs.GetEtcData("AUTH_2FA_TYPE");
+      });
+      
+      if(pwd_reset_pop != "N") // system.properties에서 전달받은 값이 N이 아니면 (팝업주소가 등록되어 있다면)
+      {
+        if(str == "Y") // 구분값이  Y이면 ( 비밀버호 초기화상태라면 )
+        {  
+        	 alert("비밀번호 초기화상태입니다. 비밀번호를 재설정해주세요.\n( Password initialization status. Please reset the password. )");
+    	     ModalUtil.open({title: 'Password initialization', url: pwd_reset_pop  , param:{S_C_CD: $("#S_C_CD").val(), S_USER_ID: $("#S_USER_ID").val(), S_MODAL_YN:"Y", S_LOGIN_YN: "Y"}});
+        }
+        else
+        {
+            //메티슨 PO의 요청으로 임시방편으로 처리 2023.01.27
+            var userId = $("#S_USER_ID").val();
+            var arrExUserIds = ["AT01","AT02","AT03","AT04","AT05","AT06","AT07","AT08","PO","PO1","PO2","PO8","POC"];
+            if(arrExUserIds.includes(userId) && isAuthYn == "Y")
+            {
+              doAction("login");
+            }
+            else if(isAuthYn == "Y")
+            {
+              if(S_AUTH_TYPE == "")
+              {
+                ModalUtil.open({title: '2차 인증절차', url: '/sys/sy_main/sy_main_421_p01.jsp', param:{S_C_CD: $("#S_C_CD").val(), S_USER_ID: $("#S_USER_ID").val(), S_MODAL_YN:"Y", S_LOGIN_YN: "Y", S_AUTH_TYPE: S_AUTH_TYPE}});
+              }
+              else if(S_AUTH_TYPE == "GOOGLE_OTP")
+              {
+                ModalUtil.open({title: '2차 인증절차', url: '/sys/sy_main/sy_main_421_p02.jsp', param:{S_C_CD: $("#S_C_CD").val(), S_USER_ID: $("#S_USER_ID").val(), S_MODAL_YN:"Y", S_LOGIN_YN: "Y", S_AUTH_TYPE: S_AUTH_TYPE}});
+              }
+            }
+            else if(isAuthYn == "N")
+            {
+              doAction("login");
+            }
+        }
+      }  
+      else
+      {
+          //메티슨 PO의 요청으로 임시방편으로 처리 2023.01.27
+          var userId = $("#S_USER_ID").val();
+          var arrExUserIds = ["AT01","AT02","AT03","AT04","AT05","AT06","AT07","AT08","PO","PO1","PO2","PO8","POC"];
+          if(arrExUserIds.includes(userId) && isAuthYn == "Y")
+          {
+            doAction("login");
+          }
+          else if(isAuthYn == "Y")
+          {
+            if(S_AUTH_TYPE == "")
+            {
+              ModalUtil.open({title: '2차 인증절차', url: '/sys/sy_main/sy_main_421_p01.jsp', param:{S_C_CD: $("#S_C_CD").val(), S_USER_ID: $("#S_USER_ID").val(), S_MODAL_YN:"Y", S_LOGIN_YN: "Y", S_AUTH_TYPE: S_AUTH_TYPE}});
+            }
+            else if(S_AUTH_TYPE == "GOOGLE_OTP")
+            {
+              ModalUtil.open({title: '2차 인증절차', url: '/sys/sy_main/sy_main_421_p02.jsp', param:{S_C_CD: $("#S_C_CD").val(), S_USER_ID: $("#S_USER_ID").val(), S_MODAL_YN:"Y", S_LOGIN_YN: "Y", S_AUTH_TYPE: S_AUTH_TYPE}});
+            }
+          }
+          else if(isAuthYn == "N")
+          {
+            doAction("login");
+          }
+      }      
+    }
+    break;
+    case "socialLogin":
+    {
+      if ( isNull( $("#S_C_CD").val()) )
+      {
+        if ("Y" == "Y")
+        {
+          alert("Please choose a company."); // 회사를 선택해주세요.
+        }
+        else
+        {
+          alert("Please enter your company."); // 회사를 입력해주세요.
+        }
+
+        return;
+      }
+      
+      if ( $("#id_chk").attr("class") == "chkLogSave" )
+      {
+        setCookie("SAVE_ID", $("#S_C_CD").val()+"|"+$("#S_USER_ID").val(), 10);
+      }
+      else
+      {
+        setCookie("SAVE_ID", "", 1);
+      }
+      
+      submit2({target: 'ehrTopFrame', action: '/social/auth'}, {cCd: $("#S_C_CD").val(), type: arguments[1]});    	        
+    }
+    break;
+  }
+}
+
+function showLoginForm(bShow)
+{
+  if(bShow)
+  {
+    $("#loginWrap").fadeIn(500);
+    $("#loginForm").animate({left:0,opacity:1.00},{duration:"slow",easing:"swing"} );
+  }
+  else
+  {
+    $("#loginForm").animate({left:-50,opacity:0},{duration:"slow",easing:"swing"} );
+    $(".loginBox").fadeOut(700);
+  }
+}
+
+function bSocialEvent()
+{
+  var socialLoginType = "";
+  
+  $("a.btnSnsLogin").each(function(i, e){
+    var type = $(e).prop("type");
+
+    if(socialLoginType.indexOf(type) < 0)
+      return;
+    
+    switch (type)
+	{
+	  case "GOOGLE":
+	  {
+		$(e).removeClass("hiddenZone");
+		$(e).click(function()
+		{
+		  doAction('socialLogin', 'google_oauth2');  
+		});
+	  }
+	  break;
+	  case "MSAD":
+	  {
+		$(e).removeClass("hiddenZone");
+		$(e).click(function()
+		{
+		  doAction('socialLogin', 'microsoftAD_oauth2');  
+		});
+	  }
+	  break;
+	}
+  });
+}
+
+</script>
+</head>
+<body onload="InitPage();" class="loginBg">
+  <form id="f1" name="f1" method="post" onsubmit="return false;">
+    <input type="hidden" id="S_NO_LOGIN_CHECK" name="S_NO_LOGIN_CHECK" value="Y">
+    <input type="hidden" id="directpage_id" name="directpage_id" value="">
+    <input type="hidden" id="firstpage_id" name="firstpage_id" value="">
+
+    <div id="loginWrap">
+      <div class="loginBox">
+        <div class="loginVisualA"></div>
+          <h1><img src="/common/images/V03/skinB/login/logo.png" onerror="this.src='/common/images/V03/skinB/login/logo.png';" alt="jade"></h1>
+          <div id="loginForm" class="inputForm" onkeydown="if(enterKeyDown(event))doAction('login_before');" style="left: 0px; opacity: 1;">
+            <div id="cCdArea" class="formArea">
+              
+            <select id="S_C_CD" name="S_C_CD"><option value="2302010">비상교육</option></select></div>
+            <div class="formArea">
+              <input type="text" id="S_USER_ID" name="S_USER_ID" placeholder="USER ID" inputmaxlimit="50">
+            </div>
+            <div class="formArea">
+              <input type="password" id="S_PWD" name="S_PWD" placeholder="PASSWORD" autocomplete="off" inputmaxlimit="50">
+            </div>
+            <div class="formArea">
+              <span class="check_area">
+                <input type="checkbox" id="id_chk" class="chkLogSave off" onclick="doAction('saveID');" checked="">
+                <label for="id_chk">Remember</label> <!-- 아이디저장 -->
+              </span>
+              <span class="pwdArea btn_areaR">
+                <a href="javascript:;" onclick="doAction('popChangePassword');">Change PW</a> <!-- 비밀번호 변경 -->
+                
+                  <span class="txtSpace">|</span>
+                  <a href="javascript:;" onclick="doAction('popResetPassword');">Reset PW</a> <!-- 비밀번호초기화 -->
+                
+              </span>
+            </div>
+            <a href="javascript:;" onclick="doAction('login_before');" id="btn_login" class="btnLogin">LOGIN</a>
+            <!-- 구글 로그인 버튼 단독으로 사용될 경우(2개까지 이 버튼 형태로 사용 예정) -->
+            <div class="btnSnsLoginArea">
+              <a href="javascript:;" class="btnSnsLogin hiddenZone" id="gSignInWrapper" type="GOOGLE">
+                <i class="ico_google"></i> <span class="valignT">구글 계정으로 로그인</span>
+              </a>
+              <a href="javascript:;" class="btnSnsLogin hiddenZone" id="gSignInWrapper" type="MSAD">
+                <i class="ico_ms"></i> <span class="valignT">마이크로소프트 계정으로 로그인</span>
+              </a>
+            </div>
+            <!-- SNS 3개 이상 추가될 경우에 사용, 현재는 구글 로그인만 사용
+            <div class="btnSnsTit">SNS 로그인</div>
+            <div class="btnSnsArea">
+              <a href="javascript:;" id="gSignInWrapper" class="btnSns" onclick="doAction('googleLogin');">
+                <img src="/common/images/V03/skinA/login/ico_google.png" alt="구글 계정으로 로그인" />
+              </a>
+              <a href="javascript:;" class="btnSns">
+                <img src="/common/images/V03/skinA/login/ico_kakaotalk.png" alt="카카오톡 계정으로 로그인" />
+              </a>
+              <a href="javascript:;" class="btnSns">
+                <img src="/common/images/V03/skinA/login/ico_naver.png" alt="네이버 계정으로 로그인" />
+              </a>
+              <a href="javascript:;" class="btnSns">
+                <img src="/common/images/V03/skinA/login/ico_facebook.png" alt="페이스북 계정으로 로그인" />
+              </a>
+              <a href="javascript:;" class="btnSns">
+                <img src="/common/images/V03/skinA/login/ico_ms.png" alt="마이크로소프트 계정으로 로그인" />
+              </a>
+            </div>  -->
+          </div>
+        <div class="loginVisualB"></div>
+      </div>
+    </div>
+    <div class="hiddenZone">
+      
+      <textarea id="xml_c_cd">        &lt;?xml version="1.0" encoding="utf-8" ?&gt;
+&lt;SHEET&gt;
+&lt;ETC-DATA&gt;
+&lt;/ETC-DATA&gt;
+&lt;DATA KEY="default"&gt;
+&lt;HTR&gt;
+&lt;TD&gt;&lt;![CDATA[COM_NM]]&gt;&lt;/TD&gt;
+&lt;TD&gt;&lt;![CDATA[C_CD]]&gt;&lt;/TD&gt;
+&lt;/HTR&gt;
+&lt;TR&gt;&lt;TD&gt;&lt;![CDATA[비상교육]]&gt;&lt;/TD&gt;
+&lt;TD&gt;&lt;![CDATA[2302010]]&gt;&lt;/TD&gt;
+&lt;/TR&gt;
+&lt;/DATA&gt;
+&lt;MESSAGE&gt;&lt;![CDATA[]]&gt;&lt;/MESSAGE&gt;
+&lt;/SHEET&gt;
+      </textarea>
+    </div>
+  </form>
+
+
+<div class="sliderghost" style="display: none; position: absolute; width: 10px; height: 10px; left: 0px; top: 0px;"></div><div class="sliderghost" style="display: none; position: absolute; width: 10px; height: 10px; left: 0px; top: 0px;"></div></body></html>

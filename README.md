@@ -38,11 +38,54 @@ python install.py
 
 의존성(requirements.txt)은 자동으로 설치됩니다.
 
+주말(토/일), Google Calendar **대한민국의 휴일**의 **공휴일**, 내 캘린더에 **연차** 일정이 있는 날에는 실행하지 않습니다.
+오늘이 공휴일/연차인지 미리 확인하려면:
+
+```bash
+python holiday_checker.py
+```
+
+### 연차 캘린더 iCal 주소 넣는 방법
+
+Google Calendar **비밀 주소(iCal 형식)** 를 `.env.private`의 `LEAVE_ICS_URL`에 넣습니다. 공개 ICS가 아닙니다.
+
+1. [Google Calendar](https://calendar.google.com) 웹에서 연차를 적어 둔 캘린더를 연다.
+2. 해당 캘린더 옆 **⋮ → 설정 및 공유**.
+3. 아래로 내려 **캘린더 통합** 항목을 연다.
+4. **비밀 주소(iCal 형식)** 를 복사한다. 주소 형태는 아래와 같다.
+
+```text
+https://calendar.google.com/calendar/ical/<캘린더ID>/private-<비밀해시>/basic.ics
+```
+
+예시 (값은 더미):
+
+```text
+https://calendar.google.com/calendar/ical/hong%40gmail.com/private-abc123def456/basic.ics
+```
+
+- `<캘린더ID>`: 기본 캘린더는 `내이메일%40gmail.com`, 다른 캘린더는 `xxxxxxxx%40group.calendar.google.com`
+- `private-<비밀해시>`: 이 값이 있어야 비공개 일정을 읽을 수 있다. `public/basic.ics` 는 개인 캘린더에 쓰지 말 것.
+- 끝나는 경로는 반드시 `/basic.ics`
+
+5. `.env.private`에 한 줄로 넣는다.
+
+```env
+LEAVE_ICS_URL=https://calendar.google.com/calendar/ical/hong%40gmail.com/private-abc123def456/basic.ics
+```
+
+제목에 `연차`가 포함된 일정만 제외합니다. `반차` 등도 빼려면 `.env`의 `LEAVE_KEYWORDS`를 바꾸세요.
+
+```env
+LEAVE_KEYWORDS=연차,반차
+```
+
 ## 📁 Project Structure
 
 ```
 window_cron/
 ├── install.py              # 메인 실행 파일
+├── holiday_checker.py      # 공휴일·연차 ICS 확인
 ├── login.py                # 로그인 처리
 ├── check_work.py           # 출퇴근 체크 로직 + 팝업 처리
 ├── popup_handler.py        # Value-Up 모달 팝업 처리 유틸리티
@@ -78,6 +121,7 @@ window_cron/
 시간대별 자동 출퇴근:
 - **출근**: 8시~12시 사이 실행 시 자동 출근
 - **퇴근**: 18시~22시 사이 실행 시 자동 퇴근
+- **제외**: 주말(토/일), Google Calendar `대한민국의 휴일`의 공휴일, 내 캘린더의 `연차` 일정
 
 전체 프로세스:
 1. 출근/퇴근 버튼 클릭
@@ -147,6 +191,10 @@ SELECTOR_BTN_END=S_WORK_END_BTN
 - 스크린샷 공유 시 개인정보 주의
 
 ## 📝 Changelog
+
+### v2.1
+- ✨ Google Calendar `대한민국의 휴일` 공휴일에는 실행 제외
+- ✨ 내 캘린더에 `연차` 일정이 있으면 실행 제외 (`LEAVE_ICS_URL`)
 
 ### v2.0 (2025-12-20)
 - ✨ Value-Up 모달 팝업 자동 처리 기능 추가

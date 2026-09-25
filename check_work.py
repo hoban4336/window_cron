@@ -15,9 +15,11 @@ import time
 import os
 import re
 
+BASE_DIR = Path(__file__).resolve().parent
+
 # .env 불러오기
-load_dotenv(dotenv_path=Path(".env"))
-load_dotenv(dotenv_path=Path(".env.private"), override=True)
+load_dotenv(dotenv_path=BASE_DIR / ".env")
+load_dotenv(dotenv_path=BASE_DIR / ".env.private", override=True)
 
 SELECTOR_IN_TIME = os.getenv("SELECTOR_IN_TIME")
 SELECTOR_OUT_TIME = os.getenv("SELECTOR_OUT_TIME")
@@ -42,7 +44,7 @@ def get_time_text(driver, element_id):
 
 def save_screenshot(driver, filename_prefix):
     now = datetime.now()
-    folder = Path("screenshots")
+    folder = BASE_DIR / "screenshots"
     folder.mkdir(exist_ok=True)
     timestamp = now.strftime("%Y%m%d_%H%M%S")
     filepath = folder / f"{timestamp}_{filename_prefix}.png"

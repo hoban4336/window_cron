@@ -1,5 +1,7 @@
 # dotenv
 .env.*
+.holiday_cache.ics
+.leave_cache.ics
 
 # Python 실행 파일
 *.py[cod]
